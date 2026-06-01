@@ -1,0 +1,11 @@
+{
+  "project": "openUBMC 开发者体验全景",
+  "current_period": "2025-Q4",
+  "last_updated": "2025-12-31",
+  "maintainers": ["体验管理团队"],
+  "spotlight": {
+    "stage": "安装部署",
+    "reason": "本期耗时上升明显，是当前最大瓶颈"
+  },
+  "headline": "全流程耗时较上期缩短 12%，但安装部署阶段问题仍集中，需重点关注"
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "id": "learn",
+    "label": "了解学习",
+    "order": 1,
+    "sub_stages": ["加入社区", "学习"],
+    "description": "注册认证、签署CLA，通过文档和课程了解 openUBMC",
+    "open_issues": 2,
+    "resolved_issues": 2,
+    "top_voc_ids": ["voc_001", "voc_002"]
+  },
+  {
+    "id": "requirement",
+    "label": "需求分析",
+    "order": 2,
+    "sub_stages": ["安装镜像", "需求设计"],
+    "description": "判断需求可行性、确定组件范围、进行方案设计",
+    "open_issues": 3,
+    "resolved_issues": 2,
+    "top_voc_ids": ["voc_003", "voc_004", "voc_005"]
+  },
+  {
+    "id": "deploy",
+    "label": "安装部署",
+    "order": 3,
+    "sub_stages": ["获取资源", "安装环境", "安装二进制包", "首次构建", "升级及同步"],
+    "description": "拉取镜像、安装组件、首次构建签名包、升级至环境",
+    "open_issues": 5,
+    "resolved_issues": 3,
+    "top_voc_ids": ["voc_006", "voc_007", "voc_008"]
+  },
+  {
+    "id": "hardware",
+    "label": "硬件适配",
+    "order": 4,
+    "sub_stages": ["CSR开发/修改", "调试验证"],
+    "description": "拓扑配置、传感器配置、出包升级、调试验证",
+    "open_issues": 4,
+    "resolved_issues": 3,
+    "top_voc_ids": ["voc_009", "voc_010"]
+  },
+  {
+    "id": "component",
+    "label": "组件开发",
+    "order": 5,
+    "sub_stages": ["新增/修改组件", "调试验证"],
+    "description": "确定组件范围、业务函数开发、UT/IT/整包测试",
+    "open_issues": 3,
+    "resolved_issues": 2,
+    "top_voc_ids": ["voc_011", "voc_012"]
+  },
+  {
+    "id": "interface",
+    "label": "接口定制",
+    "order": 6,
+    "sub_stages": ["新增/修改接口", "调试验证"],
+    "description": "确定接口文件、数据映射配置、构建出包、接口测试",
+    "open_issues": 4,
+    "resolved_issues": 1,
+    "top_voc_ids": ["voc_013", "voc_014"]
+  },
+  {
+    "id": "build",
+    "label": "构建",
+    "order": 7,
+    "sub_stages": ["流水线构建"],
+    "description": "代码合入、触发流水线、版本归档发布",
+    "open_issues": 0,
+    "resolved_issues": 0,
+    "top_voc_ids": []
+  },
+  {
+    "id": "test",
+    "label": "测试",
+    "order": 8,
+    "sub_stages": ["社区版本验证", "新需求测试", "测试执行"],
+    "description": "测试用例设计、自动化用例开发、手工测试执行",
+    "open_issues": 3,
+    "resolved_issues": 1,
+    "top_voc_ids": ["voc_015", "voc_016"]
+  },
+  {
+    "id": "maintain",
+    "label": "维护",
+    "order": 9,
+    "sub_stages": ["问题定位", "问题解决"],
+    "description": "根据日志定位根因、解决问题",
+    "open_issues": 4,
+    "resolved_issues": 0,
+    "top_voc_ids": ["voc_017", "voc_018"]
+  },
+  {
+    "id": "feedback",
+    "label": "反馈交流",
+    "order": 10,
+    "sub_stages": ["交流求助", "贡献"],
+    "description": "论坛求助、代码贡献、PR 提交（贯穿全程）",
+    "open_issues": 4,
+    "resolved_issues": 0,
+    "top_voc_ids": ["voc_019", "voc_020"]
+  }
+]

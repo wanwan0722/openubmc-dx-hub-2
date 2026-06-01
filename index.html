@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>openUBMC · 开发者体验全景</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-light: #2d2d4a;
+    --paper: #f5f0e8;
+    --paper-dark: #ede7d9;
+    --accent: #c84b31;
+    --accent-light: #e8705a;
+    --accent-pale: #fae8e4;
+    --teal: #2a7f7f;
+    --teal-light: #e4f4f4;
+    --amber: #d4860a;
+    --amber-light: #fef3dc;
+    --muted: #8a8a9a;
+    --border: #d8d0c0;
+    --font-serif: 'Noto Serif SC', serif;
+    --font-sans: 'Noto Sans SC', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(245,240,232,0.96);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+
+  .nav-brand {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .nav-brand span { color: var(--accent); }
+
+  .nav-links {
+    display: flex;
+    gap: 0;
+    list-style: none;
+  }
+  .nav-links a {
+    display: block;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    transition: color 0.2s;
+    border-radius: 4px;
+  }
+  .nav-links a:hover { color: var(--ink); }
+
+  .nav-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 80px 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 32px;
+    letter-spacing: -0.01em;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ── BLOCK 2: OVERVIEW ── */
+  #overview {
+    padding-top: 120px;
+  }
+
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .metric-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+  }
+
+  .metric-card.primary {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+  }
+
+  .metric-label {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 12px;
+    font-family: var(--font-mono);
+  }
+
+  .metric-value {
+    font-family: var(--font-serif);
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .metric-card.primary .metric-value { color: white; }
+
+  .metric-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-family: var(--font-mono);
+  }
+
+  .trend-up { color: var(--accent); }
+  .trend-down { color: var(--teal); }
+  .metric-card.primary .trend-down { color: #7dd9c7; }
+
+  .spotlight-card {
+    background: var(--accent-pale);
+    border: 1.5px solid var(--accent-light);
+    border-radius: 12px;
+    padding: 28px 32px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .spotlight-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .spotlight-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .spotlight-title {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+
+  .headline-bar {
+    background: var(--ink-light);
+    border-radius: 10px;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .headline-bar p {
+    color: #e8e8f0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .headline-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent-light);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── PERSONAS MINI STRIP (overview) ── */
+  .personas-strip-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .personas-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .persona-mini-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    transition: box-shadow 0.2s;
+  }
+
+  .persona-mini-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+
+  .persona-mini-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .persona-mini-name {
+    font-family: var(--font-serif);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+
+  .persona-mini-identity {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .persona-mini-pain {
+    font-size: 11px;
+    color: var(--ink-light);
+    background: var(--paper-dark);
+    padding: 3px 8px;
+    border-radius: 4px;
+    line-height: 1.5;
+  }
+
+  /* ── BLOCK 4: PERSONAS ── */
+  .personas-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .persona-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+
+  .persona-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
+
+  .persona-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .persona-name {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .persona-identity {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-family: var(--font-mono);
+  }
+
+  .persona-section-label {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  .persona-goal {
+    font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+
+  .pain-tags {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .pain-tag {
+    font-size: 12px;
+    color: var(--ink-light);
+    background: var(--paper-dark);
+    padding: 4px 8px;
+    border-radius: 4px;
+    line-height: 1.5;
+  }
+
+  .persona-quote {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  /* ── BLOCK 5: JOURNEY ── */
+
+  /* 常驻摘要区 */
+  .journey-summary {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .journey-insight-mini {
+    background: white;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 20px 24px;
+  }
+
+  .journey-time-mini {
+    background: var(--ink);
+    border-radius: 10px;
+    padding: 20px 22px;
+  }
+
+  .jmini-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .jmini-title {
+    font-family: var(--font-serif);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+
+  .jmini-finding {
+    font-size: 12px;
+    color: var(--ink-light);
+    line-height: 1.6;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+
+  .jmini-finding::before {
+    content: '·';
+    color: var(--accent);
+    font-size: 18px;
+    line-height: 1.1;
+    flex-shrink: 0;
+  }
+
+  .jtime-value {
+    font-family: var(--font-serif);
+    font-size: 42px;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .jtime-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    margin-bottom: 16px;
+  }
+
+  .jtime-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .jtime-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .jtime-bar-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: rgba(255,255,255,0.42);
+    width: 44px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .jtime-bar-track {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .jtime-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.3);
+    transition: width 0.6s ease;
+  }
+
+  .jtime-bar-fill.hi { background: var(--accent-light); }
+
+  .jtime-bar-val {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    width: 24px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* stage buttons */
+  .journey-stages {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .stage-btn {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--ink-light);
+    transition: all 0.18s;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 88px;
+    text-align: left;
+  }
+
+  .stage-btn:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  .stage-btn.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: white;
+  }
+
+  .stage-btn.spotlight-stage {
+    border-color: var(--accent);
+  }
+
+  .stage-issue-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    opacity: 0.55;
+  }
+
+  .stage-btn.active .stage-issue-count { opacity: 0.65; }
+
+  .stage-time-row {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .stage-btn.active .stage-time-row { color: rgba(255,255,255,0.55); }
+
+  .s-trend-up { color: var(--accent); }
+  .s-trend-down { color: var(--teal); }
+  .stage-btn.active .s-trend-up { color: #f9a090; }
+  .stage-btn.active .s-trend-down { color: #7dd9c7; }
+
+  .journey-detail {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    display: none;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .journey-detail.visible { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+
+  .detail-metric {
+    background: var(--paper-dark);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .detail-metric-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .detail-metric-value {
+    font-family: var(--font-serif);
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .detail-metric-sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .voc-section h4 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .voc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .voc-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    background: var(--paper-dark);
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .voc-status {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .status-done { background: var(--teal-light); color: var(--teal); }
+  .status-progress { background: var(--amber-light); color: var(--amber); }
+  .status-pending { background: #f0eeee; color: var(--muted); }
+
+  .insight-ref {
+    background: var(--accent-pale);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+
+  .score-note {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-top: 4px;
+  }
+
+  /* ── BLOCK 6: EFFICIENCY ── */
+  .chart-tabs {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+    background: var(--paper-dark);
+    width: fit-content;
+    margin-bottom: 28px;
+  }
+
+  .chart-tab {
+    padding: 7px 20px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .chart-tab.active {
+    background: white;
+    color: var(--ink);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+
+  .chart-container {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    display: none;
+  }
+
+  .chart-container.visible { display: block; }
+
+  .chart-wrap {
+    position: relative;
+    height: 280px;
+  }
+
+  .chart-title {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--ink);
+  }
+
+  /* ── BLOCK 7: ARCHIVE ── */
+  .archive-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .archive-item {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .archive-header {
+    padding: 22px 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    transition: background 0.15s;
+  }
+
+  .archive-header:hover { background: var(--paper-dark); }
+
+  .archive-header-left { flex: 1; }
+
+  .archive-period-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    background: var(--paper-dark);
+    color: var(--muted);
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-bottom: 8px;
+    display: inline-block;
+    letter-spacing: 0.05em;
+  }
+
+  .archive-title {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+
+  .archive-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .stage-tag {
+    background: var(--teal-light);
+    color: var(--teal);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+  }
+
+  .archive-toggle {
+    color: var(--muted);
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+
+  .archive-toggle.open { transform: rotate(180deg); }
+
+  .archive-body {
+    padding: 0 28px 24px;
+    display: none;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+
+  .archive-body.open { display: block; }
+
+  .archive-findings {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .archive-findings li {
+    font-size: 13px;
+    color: var(--ink-light);
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.6;
+  }
+
+  .archive-findings li::before {
+    content: '·';
+    position: absolute;
+    left: 4px;
+    color: var(--accent);
+    font-size: 18px;
+    top: -2px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  footer p {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ── LOADING ── */
+  #loading {
+    position: fixed;
+    inset: 0;
+    background: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    transition: opacity 0.4s;
+  }
+
+  .loading-text {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  #loading.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    section { padding: 60px 20px; }
+    .overview-grid { grid-template-columns: 1fr; }
+    .personas-strip { grid-template-columns: 1fr; }
+    .personas-grid { grid-template-columns: 1fr; }
+    .journey-summary { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <span class="loading-text">正在加载数据…</span>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">open<span>UBMC</span> · DX</div>
+  <ul class="nav-links">
+    <li><a href="#overview">概览</a></li>
+    <li><a href="#personas">用户</a></li>
+    <li><a href="#journey">旅程</a></li>
+    <li><a href="#efficiency">效率</a></li>
+    <li><a href="#archive">洞察归档</a></li>
+  </ul>
+  <div class="nav-meta" id="nav-meta">—</div>
+</nav>
+
+<!-- BLOCK 2: OVERVIEW -->
+<section id="overview">
+  <div class="section-label">社区健康概览</div>
+  <h2>开发者体验全景</h2>
+
+  <div class="overview-grid">
+    <div class="metric-card primary">
+      <div class="metric-label">全流程耗时（当期）</div>
+      <div class="metric-value" id="full-process-days">—</div>
+      <div class="metric-trend" id="full-process-trend">
+        <span>天 · 较上期</span>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">开放问题数 / 已解决问题数</div>
+      <div class="metric-value" id="issue-counts">—</div>
+      <div class="metric-trend" id="issue-sub" style="color:var(--muted); font-size:13px;"></div>
+    </div>
+  </div>
+
+  <div class="spotlight-card" id="spotlight-card" style="margin-bottom:20px;">
+    <div class="spotlight-icon">⚑</div>
+    <div>
+      <div class="spotlight-label">本期焦点阶段</div>
+      <div class="spotlight-title" id="spotlight-stage-text">—</div>
+    </div>
+  </div>
+
+  <div class="headline-bar">
+    <div class="headline-dot"></div>
+    <p id="headline-text">—</p>
+  </div>
+
+  <!-- 开发者画像简版 -->
+  <div class="personas-strip-label">当前开发者画像</div>
+  <div class="personas-strip" id="personas-mini"></div>
+</section>
+
+<hr class="divider">
+
+<!-- BLOCK 4: PERSONAS -->
+<section id="personas">
+  <div class="section-label">我们的用户</div>
+  <h2>开发者画像</h2>
+  <div class="personas-grid" id="personas-grid"></div>
+</section>
+
+<hr class="divider">
+
+<!-- BLOCK 5: JOURNEY -->
+<section id="journey">
+  <div class="section-label">开发者旅程全景</div>
+  <h2>旅程图</h2>
+
+  <!-- 常驻：最新洞察 + 耗时摘要 -->
+  <div class="journey-summary" id="journey-summary"></div>
+
+  <!-- 阶段按钮 -->
+  <div class="journey-stages" id="journey-stages"></div>
+
+  <!-- 展开详情 -->
+  <div class="journey-detail" id="journey-detail"></div>
+</section>
+
+<hr class="divider">
+
+<!-- BLOCK 6: EFFICIENCY -->
+<section id="efficiency">
+  <div class="section-label">效率趋势</div>
+  <h2>客观耗时数据</h2>
+
+  <div class="chart-tabs">
+    <button class="chart-tab active" onclick="switchChart('full')">全流程耗时趋势</button>
+    <button class="chart-tab" onclick="switchChart('stage')">各阶段耗时对比</button>
+  </div>
+
+  <div class="chart-container visible" id="chart-full">
+    <div class="chart-title">全流程完成耗时（天）</div>
+    <div class="chart-wrap"><canvas id="fullChart"></canvas></div>
+  </div>
+
+  <div class="chart-container" id="chart-stage">
+    <div class="chart-title">各阶段耗时对比（天）</div>
+    <div class="chart-wrap"><canvas id="stageChart"></canvas></div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- BLOCK 7: ARCHIVE -->
+<section id="archive">
+  <div class="section-label">洞察归档</div>
+  <h2>历史研究记录</h2>
+  <div class="archive-list" id="archive-list"></div>
+</section>
+
+<footer>
+  <p>openUBMC 开发者体验全景 · 体验管理团队维护</p>
+  <p id="footer-updated">—</p>
+</footer>
+
+<script>
+// ── DATA STORE ──
+let appData = {
+  config: null,
+  personas: null,
+  journey: null,
+  voc: null,
+  insights: null,
+  timeCost: null,
+  score: null
+};
+
+let charts = {};
+
+// ── CSV PARSER ──
+function parseCSV(text) {
+  const result = Papa.parse(text, { header: true, skipEmptyLines: true });
+  return result.data;
+}
+
+// ── FETCH ALL DATA ──
+async function loadAll() {
+  const base = './data/';
+  const [configR, personasR, journeyR, vocR, insightsR, timeR, scoreR] = await Promise.all([
+    fetch(base + 'config.json'),
+    fetch(base + 'personas.json'),
+    fetch(base + 'journey.json'),
+    fetch(base + 'voc.csv'),
+    fetch(base + 'insights.json'),
+    fetch(base + 'time_cost.csv'),
+    fetch(base + 'score.csv')
+  ]);
+
+  appData.config    = await configR.json();
+  appData.personas  = await personasR.json();
+  appData.journey   = await journeyR.json();
+  appData.voc       = parseCSV(await vocR.text());
+  appData.insights  = await insightsR.json();
+  appData.timeCost  = parseCSV(await timeR.text());
+  appData.score     = parseCSV(await scoreR.text());
+}
+
+// ── RENDER OVERVIEW ──
+function renderOverview() {
+  const { config, timeCost, journey } = appData;
+  const periods = timeCost;
+  const latest = periods[periods.length - 1];
+  const prev = periods[periods.length - 2];
+
+  document.getElementById('nav-meta').textContent = `更新：${config.last_updated}`;
+  document.getElementById('footer-updated').textContent = `最近更新：${config.last_updated}  ·  当前期次：${config.current_period}`;
+
+  // full process
+  const days = parseFloat(latest.full_process_days);
+  const prevDays = parseFloat(prev.full_process_days);
+  const diff = days - prevDays;
+  document.getElementById('full-process-days').textContent = days;
+  const trendEl = document.getElementById('full-process-trend');
+  const sign = diff > 0 ? '+' : '';
+  const cls = diff > 0 ? 'trend-up' : 'trend-down';
+  trendEl.innerHTML = `天 · 较上期 <span class="${cls}">${sign}${diff} 天</span>`;
+
+  // issues
+  const totalOpen = journey.reduce((a, s) => a + s.open_issues, 0);
+  const totalResolved = journey.reduce((a, s) => a + s.resolved_issues, 0);
+  document.getElementById('issue-counts').textContent = `${totalOpen} / ${totalResolved}`;
+  document.getElementById('issue-sub').textContent = '开放中 / 已解决';
+
+  // spotlight
+  document.getElementById('spotlight-stage-text').textContent =
+    `${config.spotlight.stage} · ${config.spotlight.reason}`;
+
+  document.getElementById('headline-text').textContent = config.headline;
+}
+
+// ── RENDER MINI PERSONAS (overview strip) ──
+const personaColors = ['#e8f4e8', '#e4f4f4', '#fae8e4'];
+const personaEmojis = ['🔧', '🧩', '🧪'];
+
+function renderMiniPersonas() {
+  const strip = document.getElementById('personas-mini');
+  strip.innerHTML = appData.personas.map((p, i) =>
+    `<div class="persona-mini-card">
+      <div class="persona-mini-avatar" style="background:${personaColors[i]}">${personaEmojis[i]}</div>
+      <div>
+        <div class="persona-mini-name">${p.name}</div>
+        <div class="persona-mini-identity">${p.identity} · ${p.experience}</div>
+        <div class="persona-mini-pain">${p.pain_points[0]}</div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+// ── RENDER PERSONAS (full) ──
+function renderPersonas() {
+  const grid = document.getElementById('personas-grid');
+  grid.innerHTML = appData.personas.map((p, i) =>
+    `<div class="persona-card">
+      <div class="persona-avatar" style="background:${personaColors[i]}">${personaEmojis[i]}</div>
+      <div class="persona-name">${p.name}</div>
+      <div class="persona-identity">${p.identity} · ${p.experience}</div>
+      <div class="persona-section-label">核心目标</div>
+      <div class="persona-goal">${p.core_goal}</div>
+      <div class="persona-section-label">主要痛点</div>
+      <div class="pain-tags">
+        ${p.pain_points.map(pp => `<span class="pain-tag">${pp}</span>`).join('')}
+      </div>
+      <div class="persona-quote">"${p.quote}"</div>
+    </div>`
+  ).join('');
+}
+
+// ── RENDER JOURNEY SUMMARY (always visible) ──
+function renderJourneySummary() {
+  const insight = appData.insights[0];
+  const { timeCost } = appData;
+  const latest = timeCost[timeCost.length - 1];
+  const prev   = timeCost[timeCost.length - 2];
+
+  const days     = parseFloat(latest.full_process_days);
+  const prevDays = parseFloat(prev.full_process_days);
+  const diff     = days - prevDays;
+  const sign     = diff > 0 ? '+' : '';
+  const trendColor = diff > 0 ? '#f9a090' : '#7dd9c7';
+
+  // Top 4 stages by days (descending)
+  const stageKeys   = ['learn','requirement','deploy','hardware','component','interface','build','test','maintain'];
+  const stageShort  = ['学习','需求','部署','硬件','组件','接口','构建','测试','维护'];
+  const stagePairs  = stageKeys.map((k, i) => ({
+    label: stageShort[i],
+    cur:   parseFloat(latest[k] || 0),
+  })).filter(s => s.cur > 0).sort((a, b) => b.cur - a.cur).slice(0, 4);
+  const maxVal = Math.max(...stagePairs.map(s => s.cur));
+
+  const summary = document.getElementById('journey-summary');
+  summary.innerHTML = `
+    <div class="journey-insight-mini">
+      <div class="jmini-label">${insight.period} · 最新洞察</div>
+      <div class="jmini-title">${insight.title}</div>
+      ${insight.findings.slice(0, 2).map(f => `<div class="jmini-finding">${f}</div>`).join('')}
+    </div>
+    <div class="journey-time-mini">
+      <div class="jmini-label" style="color:rgba(255,255,255,0.45)">全流程耗时（当期）</div>
+      <div class="jtime-value">${days}</div>
+      <div class="jtime-sub">天 · 较上期 <span style="color:${trendColor}">${sign}${diff} 天</span></div>
+      <div class="jtime-bars">
+        ${stagePairs.map(s => `
+          <div class="jtime-bar-row">
+            <div class="jtime-bar-label">${s.label}</div>
+            <div class="jtime-bar-track">
+              <div class="jtime-bar-fill${s.cur === maxVal ? ' hi' : ''}"
+                   style="width:${(s.cur / maxVal * 100).toFixed(0)}%"></div>
+            </div>
+            <div class="jtime-bar-val">${s.cur}d</div>
+          </div>`
+        ).join('')}
+      </div>
+    </div>`;
+}
+
+// ── RENDER JOURNEY (stage buttons, richer) ──
+function renderJourney() {
+  const { journey, config, timeCost } = appData;
+  const latest = timeCost[timeCost.length - 1];
+  const prev   = timeCost[timeCost.length - 2];
+
+  const container = document.getElementById('journey-stages');
+  container.innerHTML = journey.map(s => {
+    const stageDays = parseFloat(latest[s.id] || 0);
+    const prevDays  = parseFloat(prev[s.id]   || 0);
+    const diff      = stageDays - prevDays;
+    const hasDays   = stageDays > 0;
+    const isSpotlight = s.label === config.spotlight.stage;
+
+    let timeHtml = '';
+    if (hasDays) {
+      const trendCls = diff > 0 ? 's-trend-up' : 's-trend-down';
+      const arrow    = diff > 0 ? '↑' : '↓';
+      timeHtml = `<span class="stage-time-row">
+        ${stageDays}天<span class="${trendCls}">&thinsp;${arrow}${Math.abs(diff).toFixed(1)}</span>
+      </span>`;
+    }
+
+    return `<button class="stage-btn ${isSpotlight ? 'spotlight-stage' : ''}"
+      onclick="showStageDetail('${s.id}')" id="btn-${s.id}">
+      <span>${s.label}</span>
+      <span class="stage-issue-count">${s.open_issues > 0 ? s.open_issues + ' 问题' : '—'}</span>
+      ${timeHtml}
+    </button>`;
+  }).join('');
+}
+
+function showStageDetail(stageId) {
+  const stage = appData.journey.find(s => s.id === stageId);
+  const { voc, insights, timeCost, score } = appData;
+
+  // update button states
+  document.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + stageId).classList.add('active');
+
+  // get time data
+  const latest = timeCost[timeCost.length - 1];
+  const prev = timeCost[timeCost.length - 2];
+  const stageDays = parseFloat(latest[stageId] || 0);
+  const prevDays = parseFloat(prev[stageId] || 0);
+  const diff = (stageDays - prevDays).toFixed(1);
+  const sign = diff > 0 ? '+' : '';
+  const trendColor = diff > 0 ? 'var(--accent)' : 'var(--teal)';
+
+  // get score
+  const latestScore = parseFloat(score[score.length - 1][stageId] || 0);
+
+  // get relevant voc
+  const stageVoc = voc.filter(v => v.journey_stage === stage.label).slice(0, 3);
+
+  // get related insight
+  const relatedInsight = insights.find(i => i.stages_affected.includes(stage.label));
+
+  const statusMap = { '已解决': 'status-done', '进行中': 'status-progress', '待处理': 'status-pending' };
+
+  const detail = document.getElementById('journey-detail');
+  detail.innerHTML = `
+    <div style="margin-bottom:20px;">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;">${stage.label}</div>
+      <div style="font-size:14px;color:var(--ink-light);">${stage.description}</div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-metric">
+        <div class="detail-metric-label">本阶段耗时</div>
+        <div class="detail-metric-value">${stageDays > 0 ? stageDays : '—'}</div>
+        <div class="detail-metric-sub" style="color:${trendColor}">天 · 较上期 ${stageDays > 0 ? sign + diff + ' 天' : '暂无数据'}</div>
+      </div>
+      <div class="detail-metric">
+        <div class="detail-metric-label">开发者自评分</div>
+        <div class="detail-metric-value">${latestScore > 0 ? latestScore.toFixed(1) : '—'}</div>
+        <div class="detail-metric-sub">/ 5.0 · 仅供参考</div>
+        <div class="score-note">主观数据，需结合耗时综合判断</div>
+      </div>
+    </div>
+
+    <div class="voc-section">
+      <h4>开发者声音（本阶段 Top VoC）</h4>
+      ${stageVoc.length > 0 ?
+        `<div class="voc-list">
+          ${stageVoc.map(v =>
+            `<div class="voc-item">
+              <span class="voc-status ${statusMap[v.status] || 'status-pending'}">${v.status}</span>
+              <span>${v.content}</span>
+            </div>`
+          ).join('')}
+        </div>` :
+        `<div style="color:var(--muted);font-size:13px;margin-bottom:20px;">本阶段暂无 VoC 记录</div>`
+      }
+
+      ${relatedInsight ?
+        `<div class="insight-ref">
+          <strong>关联洞察 · ${relatedInsight.period}</strong>：${relatedInsight.findings[0]}
+        </div>` : ''
+      }
+    </div>
+  `;
+
+  detail.classList.add('visible');
+  setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+}
+
+// ── RENDER CHARTS ──
+function renderCharts() {
+  const { timeCost } = appData;
+  const labels = timeCost.map(r => r.period);
+  const fullDays = timeCost.map(r => parseFloat(r.full_process_days));
+
+  const stageKeys = ['learn','requirement','deploy','hardware','component','interface','build','test','maintain'];
+  const stageLabels = ['了解学习','需求分析','安装部署','硬件适配','组件开发','接口定制','构建','测试','维护'];
+
+  // Full process chart
+  const fullCtx = document.getElementById('fullChart').getContext('2d');
+  charts.full = new Chart(fullCtx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: '全流程耗时（天）',
+        data: fullDays,
+        borderColor: '#1a1a2e',
+        backgroundColor: 'rgba(26,26,46,0.06)',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#1a1a2e',
+        pointRadius: 5,
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => `${ctx.parsed.y} 天` } }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { font: { family: 'JetBrains Mono', size: 11 } }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'JetBrains Mono', size: 11 } }
+        }
+      }
+    }
+  });
+
+  // Stage chart
+  const stageCtx = document.getElementById('stageChart').getContext('2d');
+  charts.stage = new Chart(stageCtx, {
+    type: 'bar',
+    data: {
+      labels: stageLabels,
+      datasets: timeCost.map((row, i) => ({
+        label: row.period,
+        data: stageKeys.map(k => parseFloat(row[k] || 0)),
+        backgroundColor: `rgba(${i === timeCost.length-1 ? '26,26,46' : '180,170,155'},${i === timeCost.length-1 ? '0.85' : '0.4'})`,
+        borderRadius: 4
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { font: { family: 'JetBrains Mono', size: 11 }, boxWidth: 12 }
+        },
+        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} 天` } }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { font: { family: 'JetBrains Mono', size: 11 } }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'Noto Sans SC', size: 11 } }
+        }
+      }
+    }
+  });
+}
+
+// ── RENDER ARCHIVE ──
+function renderArchive() {
+  const list = document.getElementById('archive-list');
+  list.innerHTML = appData.insights.map((ins, i) =>
+    `<div class="archive-item">
+      <div class="archive-header" onclick="toggleArchive(${i})">
+        <div class="archive-header-left">
+          <div class="archive-period-tag">${ins.period} · ${ins.date}</div>
+          <div class="archive-title">${ins.title}</div>
+          <div class="archive-tags">
+            ${ins.stages_affected.map(s => `<span class="stage-tag">${s}</span>`).join('')}
+          </div>
+        </div>
+        <div class="archive-toggle" id="toggle-${i}">▾</div>
+      </div>
+      <div class="archive-body" id="body-${i}" ${i === 0 ? 'class="archive-body open"' : ''}>
+        <ul class="archive-findings">
+          ${ins.findings.map(f => `<li>${f}</li>`).join('')}
+        </ul>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function toggleArchive(i) {
+  const body = document.getElementById('body-' + i);
+  const toggle = document.getElementById('toggle-' + i);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  toggle.classList.toggle('open', !isOpen);
+}
+
+// ── CHART SWITCH ──
+function switchChart(type) {
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.chart-container').forEach(c => c.classList.remove('visible'));
+  event.target.classList.add('active');
+  document.getElementById('chart-' + type).classList.add('visible');
+}
+
+// ── INIT ──
+async function init() {
+  try {
+    await loadAll();
+    renderOverview();
+    renderMiniPersonas();
+    renderPersonas();
+    renderJourneySummary();
+    renderJourney();
+    renderCharts();
+    renderArchive();
+    document.getElementById('loading').classList.add('hidden');
+  } catch (e) {
+    console.error(e);
+    document.getElementById('loading').innerHTML =
+      `<span class="loading-text" style="color:var(--accent)">数据加载失败，请检查 data/ 目录是否完整</span>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>

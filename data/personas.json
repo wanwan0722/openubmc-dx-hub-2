@@ -1,0 +1,32 @@
+[
+  {
+    "id": "persona_1",
+    "name": "适配型开发者",
+    "identity": "硬件厂商 BMC 研发工程师",
+    "experience": "3-8年",
+    "core_goal": "快速完成板卡适配，按时交付客户需求",
+    "pain_points": ["硬件调试工具缺失", "CSR 文档不够细", "闭源组件难定位问题"],
+    "typical_stages": ["需求分析", "安装部署", "硬件适配", "构建"],
+    "quote": "我最怕的是环境装好了，但构建一直失败，找不到根因。"
+  },
+  {
+    "id": "persona_2",
+    "name": "组件开发者",
+    "identity": "ISV 方案开发工程师",
+    "experience": "2-5年",
+    "core_goal": "基于 openUBMC 扩展组件能力，实现差异化功能",
+    "pain_points": ["组件接口文档不详细", "闭源组件缺少示例", "PR 合入流程慢"],
+    "typical_stages": ["了解学习", "组件开发", "接口定制", "反馈交流"],
+    "quote": "接口文档只有介绍，没有代码级的例子，每次都要靠猜。"
+  },
+  {
+    "id": "persona_3",
+    "name": "测试验证者",
+    "identity": "质量保障/测试工程师",
+    "experience": "2-6年",
+    "core_goal": "高效完成功能验证，确保版本稳定性",
+    "pain_points": ["社区自动化用例太少", "版本说明不详细", "测试工具适配问题多"],
+    "typical_stages": ["安装部署", "测试", "维护"],
+    "quote": "iTestSmart 里很多用例跑到 openUBMC 就报错，而且是闭源没法定位。"
+  }
+]
